@@ -1,0 +1,32 @@
+name: Build ZIP→City JSON
+
+on:
+  workflow_dispatch:          # run manually from Actions tab
+  schedule:
+    - cron: "0 8 * * 1"       # every Monday 08:00 UTC (~ 3 AM ET)
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install pandas openpyxl
+
+      - name: Build us-zips.json.gz
+        run: python scripts/build_zip_json.py
+
+      - name: Commit updated data file
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "chore: refresh us-zips.json.gz"
+          file_pattern: "us-zips.json.gz"
