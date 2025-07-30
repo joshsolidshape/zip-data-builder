@@ -1,35 +1,46 @@
-name: Build ZIP→City JSON
+# .github/workflows/build-zip-json.yml
+name: Build ZIP → upload to VPS
 
 on:
   workflow_dispatch:
   schedule:
     - cron: "0 8 * * 1"
 
-# 🔑 give the default token write rights to code
 permissions:
-  contents: write         # ← required for git push
+  contents: read   # only needs read now – we’re not pushing back to GitHub
 
 jobs:
-  build:
+  build-and-deploy:
     runs-on: ubuntu-latest
+
     steps:
+      # 1 ▸ Check out repo (read‑only is fine)
       - uses: actions/checkout@v4
 
+      # 2 ▸ Set up Python and build the file
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-
-      - name: Install deps
-        run: |
+      - run: |
           python -m pip install --upgrade pip
           pip install pandas openpyxl xlrd
+          python scripts/build_zip_json.py
 
-      - name: Build us-zips.json.gz
-        run: python scripts/build_zip_json.py
-
-      - name: Commit updated data file
-        uses: stefanzweifel/git-auto-commit-action@v5
+      # 3 ▸ Copy it to the server via SSH/SCP
+      - name: Upload to VPS
+        uses: appleboy/scp-action@v0.1.4
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}   # ← pass the write-enabled token
-          commit_message: "chore: refresh us-zips.json.gz"
-          file_pattern: "us-zips.json.gz"
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          port: 22
+          source: "us-zips.json.gz"
+          target: ${{ secrets.SERVER_PATH }}
+
+      # (Optional) keep a copy in the repo as well
+      # - name: Commit updated data file back to repo
+      #   uses: stefanzweifel/git-auto-commit-action@v5
+      #   with:
+      #     commit_message: "chore: refresh us-zips.json.gz"
+      #     file_pattern: "us-zips.json.gz"
+
