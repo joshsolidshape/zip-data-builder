@@ -1,8 +1,8 @@
-# .github/workflows/build‑zip‑json.yml
+# .github/workflows/build-zip-json.yml
 name: Build ZIP → upload to VPS
 
 on:
-  workflow_dispatch:          # run manually from Actions tab
+  workflow_dispatch:          # run manually from the Actions tab
   schedule:
     - cron: "0 8 * * 1"       # every Monday 08:00 UTC
 
@@ -10,11 +10,11 @@ permissions:
   contents: read              # we’re only reading the repo
 
 jobs:
-  build‑and‑deploy:
+  build-and-deploy:           # <-- ASCII hyphen, no fancy dash
     runs-on: ubuntu-latest
 
     steps:
-      # 1 ▸ Check out the repository
+      # 1 ▸ Check out repository
       - uses: actions/checkout@v4
 
       # 2 ▸ Build the compressed JSON
@@ -26,15 +26,16 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install pandas openpyxl xlrd
-          python scripts/build_zip_json.py     # writes us‑zips.json.gz
+          python scripts/build_zip_json.py      # creates us‑zips.json.gz
 
-      # 3 ▸ Upload the file to your server via SCP
+      # 3 ▸ Upload the file to the server via SCP
       - name: Upload us‑zips.json.gz to VPS
         uses: appleboy/scp-action@v0.1.4
         with:
-          host:     ${{ secrets.SSH_HOST }}        # <── matches secret name
-          username: ${{ secrets.SSH_USER }}        # <── matches secret name
-          key:      ${{ secrets.SSH_PRIVATE_KEY }} # <── matches secret name
+          host:     ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key:      ${{ secrets.SSH_PRIVATE_KEY }}
           port: 22
-          source:  "us-zips.json.gz"
-          target:  ${{ secrets.SERVER_PATH }}      # <── matches secret name
+          source: "us-zips.json.gz"
+          target: ${{ secrets.SERVER_PATH }}
+
