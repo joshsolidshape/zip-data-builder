@@ -25,13 +25,14 @@ jobs:
           pip install pandas openpyxl xlrd
           python scripts/build_zip_json.py      # ⇒ us‑zips.json.gz
 
-      - name: Copy file to VPS
+      - name: Upload us‑zips.json.gz to VPS
         uses: appleboy/scp-action@v0.1.4
         with:
-          host:     ${{ secrets.SSH_HOST }}
+          host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
-          key:      ${{ secrets.SSH_PRIVATE_KEY }}
-          port:     22
-          source:   "us-zips.json.gz"
-          target:   ${{ secrets.SERVER_PATH }}
-          # passphrase: ${{ secrets.SSH_KEY_PASSPHRASE }}   # only if key is *not* blank
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          passphrase: ${{ secrets.SSH_PASSPHRASE }}   # ← add this
+          port: 22
+          source: "us-zips.json.gz"
+          target: ${{ secrets.SERVER_PATH }}
+
